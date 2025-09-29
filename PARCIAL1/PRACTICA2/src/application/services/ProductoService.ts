@@ -1,15 +1,10 @@
 import { Producto } from "../../domain/entities/Producto";
-import { ProductoRepository } from "../../infrastructure/repositories/ProductoRepository";
+import { IProductoRepository } from "../../domain/interfaces/IProductoRepository";
 import { randomUUID } from "crypto";
 
 export class ProductoService {
-  private repo: ProductoRepository;
+  constructor(private repo: IProductoRepository) {}
 
-  constructor() {
-    this.repo = new ProductoRepository();
-  }
-
-  // Método para insertar
   insertarProducto(nombre: string, descripcion: string, precio: number): Promise<void> {
     return new Promise((resolve, reject) => {
       const producto = new Producto(randomUUID(), nombre, descripcion, precio);
@@ -25,9 +20,8 @@ export class ProductoService {
     });
   }
 
-  // Método que inserta 10 productos realistas
   async seed() {
-    const productos: [string, string, number] [] = [
+    const productos: [string, string, number][] = [
       ["Paracetamol 500mg", "Analgésico y antipirético", 1.5],
       ["Ibuprofeno 400mg", "Antiinflamatorio no esteroideo", 2.8],
       ["Amoxicilina 500mg", "Antibiótico de amplio espectro", 4.5],
@@ -41,41 +35,35 @@ export class ProductoService {
     ];
 
     for (const [nombre, descripcion, precio] of productos) {
-      await this.insertarProducto(nombre, descripcion, precio as number);
+      await this.insertarProducto(nombre, descripcion, precio);
     }
   }
 
-  // Método para probar todos los CRUD
   async probarCRUD() {
     console.log("\n=== PRUEBAS CRUD PRODUCTO ===");
 
-    // CREATE
     await this.seed();
 
-    // READ
     const productos = await this.repo.findAll();
-    console.log("Productos disponibles:", productos);
+    console.log("📋 Productos disponibles:", productos);
 
-    // UPDATE
     if (productos.length > 0) {
       const producto = productos[0];
       if (producto) {
         this.repo.update(producto.id, { precio: 2.8 })
-          .then(p => console.log("Producto actualizado:", p))
+          .then(p => console.log("✏ Producto actualizado:", p))
           .catch(err => console.error(err.message));
       }
     }
 
-    // DELETE
     if (productos.length > 1) {
       const productoAEliminar = productos[1];
       if (productoAEliminar) {
         const eliminado = await this.repo.delete(productoAEliminar.id);
-        console.log("Eliminado:", eliminado);
+        console.log("🗑 Eliminado:", eliminado);
       }
     }
 
-    // PRUEBA DE ERROR: intentar actualizar un id inexistente
     try {
       await this.repo.update("id-invalido", { precio: 9.9 });
     } catch (err: any) {

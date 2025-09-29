@@ -1,8 +1,11 @@
+import { ProductoRepository } from "../infrastructure/repositories/ProductoRepository";
 import { ProductoService } from "../application/services/ProductoService";
 
 async function main() {
-  const productoService = new ProductoService();
-  await productoService.probarCRUD();
+  const repo = new ProductoRepository();      // implementación concreta
+  const service = new ProductoService(repo);  // inyección de dependencias
+
+  await service.probarCRUD();
 }
 
 main();
