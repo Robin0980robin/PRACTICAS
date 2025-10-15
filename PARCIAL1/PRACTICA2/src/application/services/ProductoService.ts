@@ -45,13 +45,13 @@ export class ProductoService {
     await this.seed();
 
     const productos = await this.repo.findAll();
-    console.log("📋 Productos disponibles:", productos);
+    console.log("Productos disponibles:", productos);
 
     if (productos.length > 0) {
       const producto = productos[0];
       if (producto) {
         this.repo.update(producto.id, { precio: 2.8 })
-          .then(p => console.log("✏ Producto actualizado:", p))
+          .then(p => console.log("Producto actualizado:", p))
           .catch(err => console.error(err.message));
       }
     }
@@ -60,7 +60,7 @@ export class ProductoService {
       const productoAEliminar = productos[1];
       if (productoAEliminar) {
         const eliminado = await this.repo.delete(productoAEliminar.id);
-        console.log("🗑 Eliminado:", eliminado);
+        console.log("Eliminado:", eliminado);
       }
     }
 

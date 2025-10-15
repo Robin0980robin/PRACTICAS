@@ -2,9 +2,9 @@
 
 ## Integrantes y Contribuciones
 
-* **Ruddy Paúl Pico Quijije** → Entidad Cliente
+* **Diego Sebastian Casanova Castro** → Entidad Pedido
 * **Robinson Omar Moreira Delgado** → Entidad Producto
-* **Diego Sebastian Casanova Castro** → Entidad Y
+* **Ruddy Paúl Pico Quijije** → Entidad Cliente
 
 ---
 
