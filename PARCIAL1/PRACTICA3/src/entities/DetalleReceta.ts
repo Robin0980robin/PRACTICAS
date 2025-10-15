@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { Receta } from "./Receta";
+import { Busqueda } from "./Busqueda";
 
 @Entity()
 export class DetalleReceta {
@@ -26,4 +27,7 @@ export class DetalleReceta {
 
   @ManyToOne(() => Receta, (receta) => receta.detalles, { onDelete: "CASCADE" })
   receta!: Receta;
+
+  @ManyToOne(() => Busqueda, (busqueda) => busqueda.detalles, { onDelete: "CASCADE" })
+  busqueda!: Busqueda;
 }

@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column } from "typeorm";
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm";
+import { DetalleReceta } from "./DetalleReceta";
 
 @Entity()
 export class Busqueda {
@@ -19,4 +20,7 @@ export class Busqueda {
 
   @Column()
   geolocalizacion!: string;
+
+  @OneToMany(() => DetalleReceta, (detalle) => detalle.busqueda)
+  detalles!: DetalleReceta[];
 }
