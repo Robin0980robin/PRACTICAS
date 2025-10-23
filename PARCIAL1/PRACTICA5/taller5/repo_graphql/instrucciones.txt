@@ -1,0 +1,28 @@
+🧠 Responsabilidades específicas
+
+Diseñar 3 queries GraphQL que:
+
+Usen múltiples entidades REST (por ejemplo, productos + proveedores, ventas + clientes, etc.).
+
+Combinen y unifiquen información para obtener resultados tipo dashboard o resumen general.
+
+Devuelvan datos claros y estructurados, con relaciones entre entidades (por ejemplo, productos con su categoría o proveedor).
+
+No se repitan con las queries de los otros integrantes.
+
+Implementar Field Resolvers
+
+Usar decoradores como @ResolveField() para poblar relaciones (por ejemplo, añadir la categoría de un producto o el cliente de una venta).
+
+Documentar los tipos GraphQL
+
+Agregar el decorador @Description() a los campos y queries.
+
+Crear tipos de salida (@ObjectType()) con nombres claros y campos relevantes.
+
+Probar cada query en el Playground (http://localhost:3001/graphql
+) asegurando que:
+
+Se obtienen los datos combinados correctamente.
+
+Las respuestas son coherentes con la API REST del Taller 4.
