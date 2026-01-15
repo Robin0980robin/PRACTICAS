@@ -1,0 +1,296 @@
+{
+  "name": "01-notification-real-time",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "repair-system",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "c16b3199-e2fc-4727-9730-daea33959555",
+      "name": "Webhook",
+      "webhookId": "fc1c8031-a360-42b9-9251-50881dbbb7cd"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e6f90fa3-97ab-482b-83cf-1348e1547184",
+              "leftValue": "={{ $json.body.evento }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "f42879f1-83c6-418a-b1b1-c1cc347f4af7",
+              "leftValue": "={{ $json.body.data }}",
+              "rightValue": "",
+              "operator": {
+                "type": "object",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "e3d9728d-f782-4647-8187-694f1c902d36",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "01d1495f-e0fe-4f85-92d3-4053b55ae43f",
+              "name": "eventType",
+              "value": "={{ $json.body.evento }}",
+              "type": "string"
+            },
+            {
+              "id": "9f5fafc1-6a03-4fa9-bfbf-05cf6ae67311",
+              "name": "orderId",
+              "value": "={{ $json.body.data.orderId }}",
+              "type": "string"
+            },
+            {
+              "id": "9738bdbc-28a2-43e8-9665-3fa07dd1246e",
+              "name": "timestamp",
+              "value": "={{ $json.body.timestamp }}",
+              "type": "string"
+            },
+            {
+              "id": "1d5ce370-413d-483f-930a-e35fb1a8bc1f",
+              "name": "equipmentId",
+              "value": "={{ $json.body.data.equipmentId }}",
+              "type": "string"
+            },
+            {
+              "id": "a59eadaf-7a7d-459c-9bca-20d418049c0b",
+              "name": "problemDescription",
+              "value": "={{ $json.body.data.problemDescription }}",
+              "type": "string"
+            },
+            {
+              "id": "d2e75287-300b-4b1e-9acf-5f335146f14d",
+              "name": "status",
+              "value": "={{ $json.body.data.status }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "d0eaf746-4d53-4829-bca9-b3a88428b717",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"received\",\n  \"message\": \"Event processed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        528,
+        192
+      ],
+      "id": "21e848bf-7214-4c5b-bfe7-d3b79350d247",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "=AIzaSyCVeBuqmzRggtffLkJdhJvJxoUvK-q6EKc"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Generate a professional notification message in Spanish for this repair order:\\n\\nEquipment ID: {{ $json.equipmentId }}\\nProblem: {{ $json.problemDescription }}\\nStatus: {{ $json.status }}\\n\\nCreate a brief, friendly message (2-3 sentences) informing about the repair order registration. Include emojis to make it more engaging.\"\n    }]\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        624,
+        -96
+      ],
+      "id": "c3c699ef-7610-48b6-a4dd-3277fca24543",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d7081039-4221-47af-a782-63e4b3715aed",
+              "name": "aiMessage",
+              "value": "={{ $json.candidates[0].content.parts[0].text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        -96
+      ],
+      "id": "4f0d2213-4389-41b8-bfc9-275fe7528ba4",
+      "name": "Extract AI Message"
+    },
+    {
+      "parameters": {
+        "chatId": "6514151384",
+        "text": "=🔧 *NUEVA ORDEN DE REPARACIÓN*  {{ $json.aiMessage }} ",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1040,
+        -96
+      ],
+      "id": "4573ae57-697c-4380-97ed-578d3483a099",
+      "name": "Send a text message",
+      "webhookId": "25b52ca9-7725-426b-9d64-f1a860002123",
+      "credentials": {
+        "telegramApi": {
+          "id": "G5gy7vvXiL2DU9Jp",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Extract AI Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract AI Message": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "b45e566b-e94b-4fb5-800a-70b590cc734d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "262f0083c239f270c027a1fb32ff66f7f79ed9dcc751ce0b30104bff2eb0738c"
+  },
+  "id": "J6fwlMvssmj005FmPoUof",
+  "tags": []
+}

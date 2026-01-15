@@ -1,0 +1,363 @@
+{
+  "name": "03-critical-alerts",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "repair-system",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "8df31e15-89f5-4a77-9c35-20ae3ee58aa9",
+      "name": "Webhook",
+      "webhookId": "52d9fb59-a1a2-4c49-89c6-0260c4ff23b6"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "8a627e4c-3392-4a9f-8fa1-0aeabe0b5e34",
+              "leftValue": "={{ $json.body.evento }}",
+              "rightValue": "repair_order.failed",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            },
+            {
+              "id": "6dbbc399-95f0-4956-8086-afa983e22869",
+              "leftValue": "={{ $json.body.data.status }}",
+              "rightValue": "FAILED",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        0
+      ],
+      "id": "f534a5a2-3d24-4ab6-adb8-64404235f3d4",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "AIzaSyBRCGAZXOKPhxRJlhGt1u9Duk4wXV0tS_w"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Analyze this failed repair order and classify urgency (HIGH, MEDIUM, LOW):\\n\\nOrder ID: {{ $json.body.data.orderId }}\\nEquipment ID: {{ $json.body.data.equipmentId }}\\nFailure Reason: {{ $json.body.data.failureReason || 'Not specified' }}\\n\\nRespond with JSON: {\\\"urgency\\\": \\\"HIGH|MEDIUM|LOW\\\", \\\"reason\\\": \\\"brief explanation\\\"}\"\n    }]\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        416,
+        -96
+      ],
+      "id": "89a5f906-cef3-4a2a-b804-38c58e4fac05",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const aiResponse = items[0].json.candidates[0].content.parts[0].text;\n\nconst cleanResponse = aiResponse\n    .replace(/```json\\n?/g, '')\n    .replace(/```\\n?/g, '')\n    .trim();\n\nconst parsed = JSON.parse(cleanResponse);\n\nconst webhookBody = $node['Webhook'].json.body;\n\nreturn [{\n  json: {\n    urgency: parsed.urgency,\n    reason: parsed.reason,\n    // Datos originales del webhook\n    evento: webhookBody.evento,\n    timestamp: webhookBody.timestamp,\n    orderId: webhookBody.data.orderId,\n    equipmentId: webhookBody.data.equipmentId,\n    status: webhookBody.data.status,\n    failureReason: webhookBody.data.failureReason\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        592,
+        -96
+      ],
+      "id": "02db32cf-e121-4ba6-94dd-8bca871cbe6d",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "HIGH",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "71831d7c-83ff-48ee-8217-88ba83be28f9"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "0"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "3c2d7508-eda3-4997-b5c4-f0ddfa85079c",
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "MEDIUM",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "1"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "201d7a51-7b0f-47fc-b675-085b952110f9",
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "LOW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "2"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        800,
+        -96
+      ],
+      "id": "06733a3e-b890-4589-a434-aa67b7263ff3",
+      "name": "Switch"
+    },
+    {
+      "parameters": {
+        "chatId": "6514151384",
+        "text": "=🚨 *ALERTA CRÍTICA* 🚨\n\nOrden de reparación FALLIDA\n\n📋 Order ID: {{ $json.orderId }}\n⚙️ Equipment: {{ $json.equipmentId }}\n❌ Status: {{ $json.status }}\n💭 Análisis: {{ $json.reason }}\n⚠️ Falla: {{ $json.failureReason }}\n\n⚡ *Requiere atención inmediata*",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1056,
+        -208
+      ],
+      "id": "49a2b019-5603-49b1-b74b-739ca785c2c0",
+      "name": "Send a text message",
+      "webhookId": "25b52ca9-7725-426b-9d64-f1a860002123",
+      "credentials": {
+        "telegramApi": {
+          "id": "G5gy7vvXiL2DU9Jp",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "pedrocrackc@gmail.com",
+        "subject": "⚠️ Alerta de Reparación - Urgencia Media",
+        "message": "=<h2 style=\"color: #ff9800;\">⚠️ ALERTA DE URGENCIA MEDIA</h2>\n<p><strong>Orden de reparación requiere atención</strong></p>\n<table style=\"border-collapse: collapse; width: 100%;\">\n  <tr>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Order ID:</strong></td>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\">{{ $json.orderId }}</td>\n  </tr>\n  <tr>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Equipment ID:</strong></td>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\">{{ $json.equipmentId }}</td>\n  </tr>\n  <tr>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Status:</strong></td>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\">{{ $json.status }}</td>\n  </tr>\n  <tr>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Razón del análisis:</strong></td>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\">{{ $json.reason }}</td>\n  </tr>\n  <tr>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\"><strong>Razón de falla:</strong></td>\n    <td style=\"padding: 8px; border: 1px solid #ddd;\">{{ $json.failureReason }}</td>\n  </tr>\n</table>\n<p style=\"margin-top: 20px; color: #666;\">Por favor, revisa esta orden cuando tengas oportunidad.</p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -48
+      ],
+      "id": "d02c4e4e-5fcb-422e-a87f-0e5d0a286505",
+      "name": "Send a message",
+      "webhookId": "954837c5-4420-4bbe-a4e9-16e6c14d8fa5",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "FgLEgDeyWLMCC7BA",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "console.log('Low urgency event:', {{ $json.reason }});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1056,
+        112
+      ],
+      "id": "f90869b9-31ca-4404-a9ea-e86cbeae4b26",
+      "name": "Code in JavaScript1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"received\",\n  \"message\": \"Event processed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        432,
+        192
+      ],
+      "id": "0fbf1864-08f9-4684-9d58-bf327b8836d2",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code in JavaScript1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "93167150-49a6-4146-ab7c-90af66fcbb2c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "262f0083c239f270c027a1fb32ff66f7f79ed9dcc751ce0b30104bff2eb0738c"
+  },
+  "id": "-_MnNgtQmK9ZWtLJMO_0B",
+  "tags": []
+}

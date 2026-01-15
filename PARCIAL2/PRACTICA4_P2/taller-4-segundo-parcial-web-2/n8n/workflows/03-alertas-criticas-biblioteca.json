@@ -1,0 +1,267 @@
+{
+  "name": "03-Alertas-Criticas-Biblioteca",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "biblioteca-alerts",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "webhook-alerts-001",
+      "name": "Webhook Alertas",
+      "webhookId": "biblioteca-alerts-webhook"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "check-critical-evento",
+              "leftValue": "={{ $json.body.evento }}",
+              "rightValue": "prestamo.vencido",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [220, 0],
+      "id": "check-critical",
+      "name": "¿Es Evento Crítico?"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "key",
+              "value": "TU_API_KEY_AQUI"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"contents\": [{\n    \"parts\": [{\n      \"text\": \"Analiza este evento crítico de biblioteca y clasifica la urgencia (HIGH, MEDIUM, LOW):\\n\\nEvento: {{ $json.body.evento }}\\nPréstamo ID: {{ $json.body.data.id }}\\nLibro: {{ $json.body.data.libroTitulo }}\\nUsuario: {{ $json.body.data.usuario }}\\nDías de retraso: {{ $json.body.data.diasRetraso || 'No especificado' }}\\n\\nResponde SOLO con JSON válido en este formato exacto:\\n{\\n  \\\"urgency\\\": \\\"HIGH\\\",\\n  \\\"reason\\\": \\\"breve explicación\\\"\\n}\"\n    }]\n  }]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [440, -100],
+      "id": "gemini-analysis",
+      "name": "Gemini - Análisis IA"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraer respuesta de Gemini\nconst aiResponse = items[0].json.candidates[0].content.parts[0].text;\n\n// Limpiar la respuesta (remover markdown si existe)\nconst cleanResponse = aiResponse\n    .replace(/```json\\n?/g, '')\n    .replace(/```\\n?/g, '')\n    .trim();\n\n// Parsear JSON\nconst parsed = JSON.parse(cleanResponse);\n\n// Obtener datos originales del webhook\nconst webhookBody = $node['Webhook Alertas'].json.body;\n\n// Retornar datos combinados\nreturn [{\n  json: {\n    urgency: parsed.urgency,\n    reason: parsed.reason,\n    // Datos originales\n    evento: webhookBody.evento,\n    timestamp: webhookBody.timestamp,\n    prestamoId: webhookBody.data.id,\n    libroTitulo: webhookBody.data.libroTitulo,\n    usuario: webhookBody.data.usuario,\n    diasRetraso: webhookBody.data.diasRetraso || 0,\n    estado: webhookBody.data.estado\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [660, -100],
+      "id": "parse-analysis",
+      "name": "Procesar Análisis"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "HIGH",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "urgency-high"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "HIGH"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "urgency-medium",
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "MEDIUM",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "MEDIUM"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "urgency-low",
+                    "leftValue": "={{ $json.urgency }}",
+                    "rightValue": "LOW",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "LOW"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [880, -100],
+      "id": "switch-urgency",
+      "name": "Clasificar Urgencia"
+    },
+    {
+      "parameters": {
+        "chatId": "TU_CHAT_ID_AQUI",
+        "text": "=🚨 *ALERTA CRÍTICA - BIBLIOTECA* 🚨\\n\\n❌ *Préstamo Vencido*\\n\\n📋 ID Préstamo: {{ $json.prestamoId }}\\n📚 Libro: {{ $json.libroTitulo }}\\n👤 Usuario: {{ $json.usuario }}\\n⏰ Días de retraso: {{ $json.diasRetraso }}\\n💭 Análisis IA: {{ $json.reason }}\\n\\n⚡ *Requiere atención INMEDIATA*",
+        "additionalFields": {
+          "parse_mode": "Markdown"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1100, -250],
+      "id": "telegram-high",
+      "name": "Telegram - Alta Urgencia",
+      "webhookId": "telegram-high-webhook",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log para urgencia media\nconsole.log('⚠️ Alerta Media:', {\n  prestamo: $json.prestamoId,\n  libro: $json.libroTitulo,\n  reason: $json.reason\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, -50],
+      "id": "log-medium",
+      "name": "Log - Media Urgencia"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log para urgencia baja\nconsole.log('ℹ️ Alerta Baja:', {\n  prestamo: $json.prestamoId,\n  libro: $json.libroTitulo,\n  reason: $json.reason\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1100, 100],
+      "id": "log-low",
+      "name": "Log - Baja Urgencia"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"received\",\n  \"message\": \"Critical alert processed\",\n  \"workflow\": \"critical-alerts\",\n  \"urgency\": \"{{ $json.urgency }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [1320, 0],
+      "id": "respond-alert",
+      "name": "Responder al Backend"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"skipped\",\n  \"message\": \"Event is not critical\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [440, 150],
+      "id": "respond-skip",
+      "name": "Responder - No Crítico"
+    }
+  ],
+  "connections": {
+    "Webhook Alertas": {
+      "main": [[{ "node": "¿Es Evento Crítico?", "type": "main", "index": 0 }]]
+    },
+    "¿Es Evento Crítico?": {
+      "main": [
+        [{ "node": "Gemini - Análisis IA", "type": "main", "index": 0 }],
+        [{ "node": "Responder - No Crítico", "type": "main", "index": 0 }]
+      ]
+    },
+    "Gemini - Análisis IA": {
+      "main": [[{ "node": "Procesar Análisis", "type": "main", "index": 0 }]]
+    },
+    "Procesar Análisis": {
+      "main": [[{ "node": "Clasificar Urgencia", "type": "main", "index": 0 }]]
+    },
+    "Clasificar Urgencia": {
+      "main": [
+        [{ "node": "Telegram - Alta Urgencia", "type": "main", "index": 0 }],
+        [{ "node": "Log - Media Urgencia", "type": "main", "index": 0 }],
+        [{ "node": "Log - Baja Urgencia", "type": "main", "index": 0 }]
+      ]
+    },
+    "Telegram - Alta Urgencia": {
+      "main": [[{ "node": "Responder al Backend", "type": "main", "index": 0 }]]
+    },
+    "Log - Media Urgencia": {
+      "main": [[{ "node": "Responder al Backend", "type": "main", "index": 0 }]]
+    },
+    "Log - Baja Urgencia": {
+      "main": [[{ "node": "Responder al Backend", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}

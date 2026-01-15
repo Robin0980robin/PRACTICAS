@@ -1,0 +1,146 @@
+[
+  {
+    "id": 1,
+    "pacienteId": "P999",
+    "pacienteNombre": "TEST WEBHOOK",
+    "medicoId": "M999",
+    "medicoNombre": "Dr. TEST",
+    "fechaPrescripcion": "2026-01-12T05:41:39.785Z",
+    "fechaVencimiento": "2026-02-11T05:41:39.785Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina",
+        "duracionDias": 3,
+        "frecuencia": "cada 12 horas",
+        "dosis": "100mg",
+        "cantidad": 10
+      }
+    ],
+    "estado": "pendiente"
+  },
+  {
+    "id": 2,
+    "fechaPrescripcion": "2026-01-12T05:45:37.377Z",
+    "fechaVencimiento": "2026-02-11T05:45:37.377Z",
+    "estado": "pendiente"
+  },
+  {
+    "id": 3,
+    "fechaPrescripcion": "2026-01-12T05:45:51.893Z",
+    "fechaVencimiento": "2026-02-11T05:45:51.893Z",
+    "estado": "pendiente"
+  },
+  {
+    "id": 4,
+    "pacienteId": "P999",
+    "pacienteNombre": "TEST WEBHOOK",
+    "medicoId": "M999",
+    "medicoNombre": "Dr. TEST",
+    "fechaPrescripcion": "2026-01-12T05:47:09.377Z",
+    "fechaVencimiento": "2026-02-11T05:47:09.377Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina",
+        "duracionDias": 3,
+        "frecuencia": "cada 12 horas",
+        "dosis": "100mg",
+        "cantidad": 10
+      }
+    ],
+    "estado": "pendiente"
+  },
+  {
+    "id": 5,
+    "pacienteId": "P888",
+    "pacienteNombre": "PRUEBA FINAL",
+    "medicoId": "M888",
+    "medicoNombre": "Dr. PRUEBA",
+    "fechaPrescripcion": "2026-01-12T07:29:01.865Z",
+    "fechaVencimiento": "2026-02-11T07:29:01.865Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina TEST",
+        "duracionDias": 3,
+        "frecuencia": "cada 8 horas",
+        "dosis": "100mg",
+        "cantidad": 5
+      }
+    ],
+    "estado": "pendiente"
+  },
+  {
+    "id": 6,
+    "pacienteId": "P888",
+    "pacienteNombre": "PRUEBA FINAL",
+    "medicoId": "M888",
+    "medicoNombre": "Dr. PRUEBA",
+    "fechaPrescripcion": "2026-01-12T07:30:01.888Z",
+    "fechaVencimiento": "2026-02-11T07:30:01.888Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina TEST",
+        "duracionDias": 3,
+        "frecuencia": "cada 8 horas",
+        "dosis": "100mg",
+        "cantidad": 5
+      }
+    ],
+    "estado": "pendiente"
+  },
+  {
+    "id": 7,
+    "fechaPrescripcion": "2026-01-12T15:29:01.258Z",
+    "fechaVencimiento": "2026-02-11T15:29:01.258Z",
+    "estado": "pendiente"
+  },
+  {
+    "id": 8,
+    "fechaPrescripcion": "2026-01-12T15:32:08.535Z",
+    "fechaVencimiento": "2026-02-11T15:32:08.535Z",
+    "estado": "pendiente"
+  },
+  {
+    "id": 9,
+    "pacienteId": "P888",
+    "pacienteNombre": "PRUEBA FINAL",
+    "medicoId": "M888",
+    "medicoNombre": "Dr. PRUEBA",
+    "fechaPrescripcion": "2026-01-12T15:33:13.025Z",
+    "fechaVencimiento": "2026-02-11T15:33:13.025Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina TEST",
+        "cantidad": 5,
+        "dosis": "100mg",
+        "frecuencia": "cada 8 horas",
+        "duracionDias": 3
+      }
+    ],
+    "estado": "pendiente"
+  },
+  {
+    "id": 10,
+    "pacienteId": "P888",
+    "pacienteNombre": "PRUEBA FINAL",
+    "medicoId": "M888",
+    "medicoNombre": "Dr. PRUEBA",
+    "fechaPrescripcion": "2026-01-12T15:36:48.491Z",
+    "fechaVencimiento": "2026-02-11T15:36:48.491Z",
+    "medicamentos": [
+      {
+        "id": 1,
+        "nombre": "Aspirina TEST2",
+        "cantidad": 5,
+        "dosis": "100mg",
+        "frecuencia": "cada 8 horas",
+        "duracionDias": 3
+      }
+    ],
+    "estado": "pendiente"
+  }
+]

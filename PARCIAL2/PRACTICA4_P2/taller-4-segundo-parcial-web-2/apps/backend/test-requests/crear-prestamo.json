@@ -1,0 +1,34 @@
+{
+  "name": "Taller 4 - Crear Prescripción Médica",
+  "description": "Crea una prescripción farmacéutica y dispara eventos hacia n8n",
+  "method": "POST",
+  "url": "http://localhost:3002/prescripciones",
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "pacienteId": "PAC001",
+    "pacienteNombre": "Juan Pérez",
+    "medicoId": "MED123",
+    "medicoNombre": "Dra. María González",
+    "medicamentos": [
+      {
+        "id": 15,
+        "nombre": "Paracetamol 500mg",
+        "cantidad": 20,
+        "dosis": "500mg",
+        "frecuencia": "Cada 8 horas",
+        "duracionDias": 5
+      },
+      {
+        "id": 28,
+        "nombre": "Ibuprofeno 400mg",
+        "cantidad": 15,
+        "dosis": "400mg",
+        "frecuencia": "Cada 12 horas",
+        "duracionDias": 7
+      }
+    ],
+    "diasValidez": 30
+  }
+}

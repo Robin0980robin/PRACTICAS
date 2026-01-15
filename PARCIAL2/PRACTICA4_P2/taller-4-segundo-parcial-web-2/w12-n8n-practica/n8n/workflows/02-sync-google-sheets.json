@@ -1,0 +1,240 @@
+{
+  "name": "02-sync-google-sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "repair-system",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "83ae5260-f036-47b9-a290-d65fea5214ac",
+      "name": "Webhook",
+      "webhookId": "eb45c8a2-4c32-4c53-9b89-ba2985164bfc"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "34bc5323-f85f-4262-8199-87445705b191",
+              "name": "dateTime",
+              "value": "={{ new Date($json.body.timestamp).toLocaleString('es-ES') }}",
+              "type": "string"
+            },
+            {
+              "id": "94b6bb44-edaf-4485-b527-7b893b376ab7",
+              "name": "eventType",
+              "value": "={{ $json.body.evento }}",
+              "type": "string"
+            },
+            {
+              "id": "a212e9fd-886e-4044-a1cd-8e60f86c2aa4",
+              "name": "orderId",
+              "value": "={{ $json.body.data.orderId }}",
+              "type": "string"
+            },
+            {
+              "id": "e0ce2d53-7e1f-4035-ba13-a3220cd7650d",
+              "name": "equipmentId",
+              "value": "={{ $json.body.data.equipmentId }}",
+              "type": "string"
+            },
+            {
+              "id": "96d82f56-9232-413a-9ea6-c0dfca894730",
+              "name": "status",
+              "value": "={{ $json.body.data.status }}",
+              "type": "string"
+            },
+            {
+              "id": "f8559652-74fe-48c6-bf7b-d21037366acd",
+              "name": "description",
+              "value": "={{ $json.body.data.problemDescription || 'N/A' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        208,
+        0
+      ],
+      "id": "de07caac-6a39-4e43-9eea-501d6d211e47",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "https://docs.google.com/spreadsheets/d/1N25B_vvEbGvlPwsDqG2Kwh0iFezN7gQmO_9rKPKJGhY/edit?gid=0#gid=0",
+          "mode": "url"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1N25B_vvEbGvlPwsDqG2Kwh0iFezN7gQmO_9rKPKJGhY/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date/Time": "={{ $json.dateTime }}",
+            "Event Type": "={{ $json.eventType }}",
+            "Order ID": "={{ $json.orderId }}",
+            "Equipment ID": "={{ $json.equipmentId }}",
+            "Status": "={{ $json.status }} ",
+            "Description": "={{ $json.description }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Date/Time",
+              "displayName": "Date/Time",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Event Type",
+              "displayName": "Event Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Order ID",
+              "displayName": "Order ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Equipment ID",
+              "displayName": "Equipment ID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        416,
+        0
+      ],
+      "id": "50757170-d9e6-498b-b67b-e66d1e6e7084",
+      "name": "Append row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "1UD7AcGvFVWUbbuU",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"status\": \"received\",\n  \"message\": \"Event processed\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        624,
+        0
+      ],
+      "id": "321c9a79-225c-460a-af2e-cdbfa1d85d8b",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": false
+  },
+  "versionId": "ed393eff-e71d-407d-92d5-062a796f2cef",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "262f0083c239f270c027a1fb32ff66f7f79ed9dcc751ce0b30104bff2eb0738c"
+  },
+  "id": "xNti_yL3_1FxF3VqheGIV",
+  "tags": []
+}

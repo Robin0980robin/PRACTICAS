@@ -1,0 +1,203 @@
+{
+  "name": "02-Sincronizacion-Google-Sheets",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "biblioteca-sheets",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "id": "webhook-sheets-001",
+      "name": "Webhook Sheets",
+      "webhookId": "biblioteca-sheets-webhook"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "field-datetime",
+              "name": "dateTime",
+              "value": "={{ new Date($json.body.timestamp).toLocaleString('es-ES', { timeZone: 'America/Guayaquil' }) }}",
+              "type": "string"
+            },
+            {
+              "id": "field-eventType",
+              "name": "eventType",
+              "value": "={{ $json.body.evento }}",
+              "type": "string"
+            },
+            {
+              "id": "field-recordId",
+              "name": "recordId",
+              "value": "={{ $json.body.data.id || $json.body.data.prestamoId || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "field-libro",
+              "name": "libro",
+              "value": "={{ $json.body.data.libroTitulo || $json.body.data.titulo || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "field-usuario",
+              "name": "usuario",
+              "value": "={{ $json.body.data.usuario || $json.body.data.nombreUsuario || 'N/A' }}",
+              "type": "string"
+            },
+            {
+              "id": "field-estado",
+              "name": "estado",
+              "value": "={{ $json.body.data.estado || 'activo' }}",
+              "type": "string"
+            },
+            {
+              "id": "field-descripcion",
+              "name": "descripcion",
+              "value": "={{ $json.body.data.descripcion || $json.body.data.observaciones || 'Operación de biblioteca' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [220, 0],
+      "id": "transform-sheets-data",
+      "name": "Transformar para Sheets"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "TU_SPREADSHEET_ID_AQUI",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Fecha/Hora": "={{ $json.dateTime }}",
+            "Tipo de Evento": "={{ $json.eventType }}",
+            "ID Registro": "={{ $json.recordId }}",
+            "Libro": "={{ $json.libro }}",
+            "Usuario": "={{ $json.usuario }}",
+            "Estado": "={{ $json.estado }}",
+            "Descripción": "={{ $json.descripcion }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Fecha/Hora",
+              "displayName": "Fecha/Hora",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Tipo de Evento",
+              "displayName": "Tipo de Evento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "ID Registro",
+              "displayName": "ID Registro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Libro",
+              "displayName": "Libro",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Usuario",
+              "displayName": "Usuario",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Estado",
+              "displayName": "Estado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Descripción",
+              "displayName": "Descripción",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [440, 0],
+      "id": "append-sheets",
+      "name": "Agregar a Google Sheets",
+      "credentials": {}
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"status\": \"received\",\n  \"message\": \"Event synced to Google Sheets\",\n  \"workflow\": \"sheets-sync\",\n  \"timestamp\": \"{{ $json.dateTime }}\"\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [660, 0],
+      "id": "respond-sheets",
+      "name": "Responder al Backend"
+    }
+  ],
+  "connections": {
+    "Webhook Sheets": {
+      "main": [[{ "node": "Transformar para Sheets", "type": "main", "index": 0 }]]
+    },
+    "Transformar para Sheets": {
+      "main": [[{ "node": "Agregar a Google Sheets", "type": "main", "index": 0 }]]
+    },
+    "Agregar a Google Sheets": {
+      "main": [[{ "node": "Responder al Backend", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "tags": []
+}
